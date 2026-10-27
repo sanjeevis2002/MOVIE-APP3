@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Tamil TV</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_live_tv">Live TV</string>
+    <string name="nav_movies">Movies</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_watchlist">Watchlist</string>
+    <string name="nav_subscription">Premium</string>
+    <string name="live_badge">LIVE</string>
+    <string name="search_placeholder">Search channels, movies, actors...</string>
+    <string name="unlock_premium">Unlock Premium</string>
+</resources>

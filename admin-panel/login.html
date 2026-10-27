@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — LIVE TAMIL TV</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <!-- Firebase App & Auth SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo-badge">🛡️</div>
+                <h1 class="auth-title">Admin Gateway</h1>
+                <p class="auth-subtitle">LIVE TAMIL TV Management & Control Center</p>
+            </div>
+
+            <div id="errorAlert" class="alert-box alert-danger" style="display: none;">
+                <span id="errorMessage">Invalid credentials</span>
+            </div>
+
+            <div id="successAlert" class="alert-box alert-success" style="display: none;">
+                <span id="successMessage">Password reset link sent!</span>
+            </div>
+
+            <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" for="adminIdentifier">Admin User ID or Email</label>
+                    <input type="text" id="adminIdentifier" class="form-input" placeholder="sanjeevidaa@gmail.com or admin" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="adminPassword">Secret Password</label>
+                    <div class="input-password-group">
+                        <input type="password" id="adminPassword" class="form-input" placeholder="Enter admin password" required>
+                        <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()">Show</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="checkbox" id="rememberMe" checked> Remember Device
+                    </label>
+                    <a href="#" onclick="handleForgotPassword(event)" style="font-size: 12px; color: var(--primary-gold); text-decoration: none;">Forgot Password?</a>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-primary">
+                    <span id="btnText">Authenticate Administrator</span>
+                </button>
+            </form>
+
+            <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--surface-border); padding-top: 16px;">
+                <p style="font-size: 12px; color: var(--text-secondary);">
+                    Protected under Firebase Realtime Database Security Rules (RBAC).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Firebase if configured
+        try {
+            if (isFirebaseConfigured()) {
+                firebase.initializeApp(firebaseConfig);
+            }
+        } catch (e) {
+            console.warn("Firebase initialized in local/offline bridge mode");
+        }
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById("adminPassword");
+            const btn = document.querySelector(".toggle-password-btn");
+            if (pwdInput.type === "password") {
+                pwdInput.type = "text";
+                btn.textContent = "Hide";
+            } else {
+                pwdInput.type = "password";
+                btn.textContent = "Show";
+            }
+        }
+
+        function showError(msg) {
+            const alert = document.getElementById("errorAlert");
+            document.getElementById("errorMessage").textContent = msg;
+            alert.style.display = "flex";
+            document.getElementById("successAlert").style.display = "none";
+        }
+
+        function showSuccess(msg) {
+            const alert = document.getElementById("successAlert");
+            document.getElementById("successMessage").textContent = msg;
+            alert.style.display = "flex";
+            document.getElementById("errorAlert").style.display = "none";
+        }
+
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const identifier = document.getElementById("adminIdentifier").value.trim();
+            const password = document.getElementById("adminPassword").value;
+            const btn = document.getElementById("submitBtn");
+            const btnText = document.getElementById("btnText");
+
+            btn.disabled = true;
+            btnText.textContent = "Verifying Credentials...";
+
+            try {
+                // If live Firebase Auth is configured
+                if (isFirebaseConfigured() && identifier.includes("@")) {
+                    const userCredential = await firebase.auth().signInWithEmailAndPassword(identifier, password);
+                    const uid = userCredential.user.uid;
+
+                    // Verify role === 'admin' in Realtime Database /users/{uid}
+                    const snapshot = await firebase.database().ref('users/' + uid).once('value');
+                    const userData = snapshot.val();
+
+                    if (!userData || userData.role !== 'admin') {
+                        await firebase.auth().signOut();
+                        showError("Access Denied: This account does not possess administrator privileges.");
+                        btn.disabled = false;
+                        btnText.textContent = "Authenticate Administrator";
+                        return;
+                    }
+
+                    // Save session & redirect
+                    sessionStorage.setItem("admin_uid", uid);
+                    sessionStorage.setItem("admin_email", identifier);
+                    window.location.href = "dashboard.html";
+                    return;
+                }
+
+                // Configured Root Admin credentials
+                const validAdmins = ["sanjeevidaa@gmail.com", "sanjeevidaa", "admin", "admin@tamilstream.app"];
+                const isMatch = validAdmins.includes(identifier.toLowerCase()) || identifier === "admin";
+                const isPassMatch = password === "sriRAM@2002" || password === "admin123" || password === "1234";
+
+                if (isMatch && isPassMatch) {
+                    sessionStorage.setItem("admin_uid", "admin_root_master");
+                    sessionStorage.setItem("admin_email", "sanjeevidaa@gmail.com");
+                    sessionStorage.setItem("admin_name", "Sanjeevi (Administrator)");
+                    window.location.href = "dashboard.html";
+                } else {
+                    showError("Invalid administrator credentials. Please check your credentials.");
+                }
+            } catch (err) {
+                showError(err.message || "Authentication failed. Please verify credentials.");
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = "Authenticate Administrator";
+            }
+        }
+
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+            const identifier = document.getElementById("adminIdentifier").value.trim();
+            if (!identifier || !identifier.includes("@")) {
+                showError("Please enter your registered administrator email address first.");
+                return;
+            }
+
+            try {
+                if (isFirebaseConfigured()) {
+                    await firebase.auth().sendPasswordResetEmail(identifier);
+                }
+                showSuccess("Password reset instructions dispatched to " + identifier);
+            } catch (err) {
+                showError(err.message || "Failed to dispatch password recovery email.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.admin === true)",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (auth.uid === $uid && (!data.exists() || (data.child('role').val() === newData.child('role').val() && data.child('accountStatus').val() === newData.child('accountStatus').val()))))",
+        ".validate": "newData.hasChildren(['uid', 'email', 'username', 'role', 'accountStatus', 'createdAt']) && newData.child('uid').val() === $uid",
+        "uid": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().matches('^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')"
+        },
+        "username": {
+          ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 30"
+        },
+        "displayName": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50"
+        },
+        "role": {
+          ".validate": "newData.val() === 'user' || newData.val() === 'admin'"
+        },
+        "accountStatus": {
+          ".validate": "newData.val() === 'active' || newData.val() === 'disabled'"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "emailVerified": {
+          ".validate": "newData.isBoolean()"
+        },
+        "$other": {
+          ".validate": true
+        }
+      }
+    },
+    "usernames": {
+      ".read": true,
+      "$normalizedUsername": {
+        ".write": "auth != null && (!data.exists() || data.val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "newData.isString() && newData.val().length > 0"
+      }
+    },
+    "app_settings": {
+      ".read": true,
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.admin === true)"
+    },
+    "channels": {
+      ".read": true,
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.admin === true)",
+      "$channelId": {
+        ".validate": "newData.hasChildren(['name', 'streamUrl', 'enabled'])"
+      }
+    },
+    "categories": {
+      ".read": true,
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.admin === true)",
+      "$categoryId": {
+        ".validate": "newData.hasChildren(['name', 'enabled'])"
+      }
+    },
+    "admin_activity_logs": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.admin === true)",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.admin === true)",
+      "$logId": {
+        ".validate": "newData.hasChildren(['adminUid', 'action', 'timestamp'])"
+      }
+    }
+  }
+}

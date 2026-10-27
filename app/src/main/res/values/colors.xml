@@ -1,0 +1,10 @@
+<resources>
+    <color name="primary_gold">#F59E0B</color>
+    <color name="primary_gold_dark">#D97706</color>
+    <color name="background_dark">#09090B</color>
+    <color name="surface_dark">#18181B</color>
+    <color name="surface_variant_dark">#27272A</color>
+    <color name="text_primary">#F4F4F5</color>
+    <color name="text_secondary">#A1A1AA</color>
+    <color name="live_red">#EF4444</color>
+</resources>

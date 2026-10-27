@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Default security: require HTTPS, no cleartext traffic -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Narrow exceptions for verified IPTV broadcast stream hostnames requiring HTTP -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">livebox.co.in</domain>
+        <domain includeSubdomains="true">aynascope.net</domain>
+        <domain includeSubdomains="true">tangotv.in</domain>
+        <domain includeSubdomains="true">ottlive.co.in</domain>
+        <domain includeSubdomains="true">pishow.tv</domain>
+        <domain includeSubdomains="true">onecloudlive.in</domain>
+        <domain includeSubdomains="true">akamaized.net</domain>
+        <domain includeSubdomains="true">cloudfront.net</domain>
+        <domain includeSubdomains="true">gpcdn.net</domain>
+        <domain includeSubdomains="true">vgcdn.net</domain>
+        <domain includeSubdomains="true">asiatvnet.com</domain>
+        <domain includeSubdomains="true">bancadeltempoidea.org</domain>
+        <domain>103.151.60.162</domain>
+        <domain>103.165.93.31</domain>
+        <domain>103.185.24.134</domain>
+        <domain>66.102.126.10</domain>
+    </domain-config>
+</network-security-config>
